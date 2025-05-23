@@ -34,28 +34,28 @@ assert_csv_rows([Row|Rows]) :-
 
 % We add some sample FActs to make sure we have 50 FActs
 % These are for cities and their connections
-connected_cities(chicago, miami).
-connected_cities(miami, houston).
-connected_cities(houston, seattle).
-connected_cities(seattle, anchorage).
-connected_cities(anchorage, jefferson).
-connected_cities(chicago, houston).
-connected_cities(miami, seattle).
-connected_cities(houston, anchorage).
-connected_cities(seattle, jefferson).
-connected_cities(chicago, seattle).
+connectedCities(chicago, miami).
+connectedCities(miami, houston).
+connectedCities(houston, seattle).
+connectedCities(seattle, anchorage).
+connectedCities(anchorage, jefferson).
+connectedCities(chicago, houston).
+connectedCities(miami, seattle).
+connectedCities(houston, anchorage).
+connectedCities(seattle, jefferson).
+connectedCities(chicago, seattle).
 
 % FActs for high crime cities
-high_crime_city(chicago).
-high_crime_city(houston).
-high_crime_city(miami).
+highCrimeCity(chicago).
+highCrimeCity(houston).
+highCrimeCity(miami).
 
 % FActs for suspect severity
-suspect_severity(john, high).
-suspect_severity(mary, medium).
-suspect_severity(bob, low).
-suspect_severity(alice, high).
-suspect_severity(tom, medium).
+suspectSeverity(john, high).
+suspectSeverity(mary, medium).
+suspectSeverity(bob, low).
+suspectSeverity(alice, high).
+suspectSeverity(tom, medium).
 
 % We are defining Criteria For Murder Suspects
 suspects(murder, Suspect, Reasons) :-
@@ -91,17 +91,17 @@ suspects(theft, Suspect, Reasons) :-
     Reasons \= [].
 
 % Rule to check if city is high crime
-is_high_crime(City) :-
-    high_crime_city(City).
+isHighCrime(City) :-
+    highCrimeCity(City).
 
 % Rule to find suspects in high crime cities
-suspects_in_high_crime(Crime, Suspect, City, Reasons) :-
+suspectsINHighCrime(Crime, Suspect, City, Reasons) :-
     suspects(Crime, Suspect, Reasons),
     location(Suspect, City),
-    high_crime_city(City).
+    highCrimeCity(City).
 
 % Rule to prioritize young suspects (age assumed from hasMotive)
-prioritize_young_suspect(Suspect) :-
+prioritizeYoungSuspects(Suspect) :-
     hasMotive(Suspect),
     not(criminalRecord(Suspect)).
 
@@ -111,12 +111,12 @@ unresolved_crime(Suspect) :-
     not(criminalRecord(Suspect)).
 
 % Rule to escalate serious suspects
-escalate_suspect(Suspect) :-
-    suspect_severity(Suspect, high).
+escalateSuspect(Suspect) :-
+    suspectSeverity(Suspect, high).
 
 % Rule to suggest patrol in high crime cities
 suggest_patrol(City) :-
-    high_crime_city(City).
+    highCrimeCity(City).
 
 % Rule to check if suspect is dangerous
 dangerous_suspect(Suspect) :-
@@ -132,12 +132,12 @@ multiple_crimes(Suspect, Crimes) :-
 % Rule to validate suspect for investigation
 valid_suspect(Suspect, Crime) :-
     suspects(Crime, Suspect, _),
-    suspect_severity(Suspect, Severity),
+    suspectSeverity(Suspect, Severity),
     Severity \= low.
 
 % Rule to check if two cities are connected
 are_connected(City1, City2) :-
-    connected_cities(City1, City2); connected_cities(City2, City1).
+    connectedCities(City1, City2); connectedCities(City2, City1).
 
 % Rule to find path between cities (for BFS/DFS)
 path_between(City1, City2, Path) :-
@@ -174,7 +174,7 @@ a_star_path(Current, Goal, Open, Closed, Path, Cost) :-
     a_star_path(Current, Goal, NewOpen, [Current|Closed], Path, Cost).
 
 % Hueristic for A* and Greedy (simple: 1 for high crime, 2 otherwise)
-hueristic(City, 1) :- high_crime_city(City).
+hueristic(City, 1) :- highCrimeCity(City).
 hueristic(_, 2).
 
 % Here we Are filtering Suspects by Crime and Location
