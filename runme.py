@@ -1,40 +1,20 @@
-# My AI Detective Agent with CSV file Integerated
-# This progarm watches ALL files in folder and reruns when any file changes
-# NOte: Place suspects.csv, kb.pl, and all Python scripts in the same folder
-# Changes to any file (py, pl, csv, etc.) reflect immediately
+# My AI Detective Agent with CSV file Integrated
+# This program runs search algorithms with Prolog KB for crime detection
+# I have placed the data sets crime and suspects in the same directory
+# Please Installed the required dependencies 
+# and then Run "python3 runme.py"
 
 import pandas as pd
 from pyswip import Prolog
 import importlib.util
 import sys
 import uuid
-import time
 import os
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
-# File watching class to rerun on any file change
-class FileChangeHandler(FileSystemEventHandler):
-    def __init__(self, callback):
-        self.callback = callback
-        self.last_run = 0
-        self.debounce = 1  # Seconds to wait before rerunning
-
-    def on_modified(self, event):
-        if not event.is_directory:
-            current_time = time.time()
-            if current_time - self.last_run > self.debounce:
-                print(f"\nFile changed: {event.src_path}. Rerunning agent...")
-                self.callback(event.src_path)
-                self.last_run = current_time
-
-# Core agent logic
-def run_agent(changed_file=None):
+def run_agent():
     try:
-        # Initialize Prolog and reload kb.pl if it changed
+        # Initialize Prolog and consult kb.pl
         prolog = Prolog()
-        if changed_file and os.path.basename(changed_file) == 'kb.pl':
-            print("Reloading kb.pl due to change...")
         prolog.consult('kb.pl')
 
         # Load suspects CSV
@@ -130,38 +110,23 @@ def run_agent(changed_file=None):
             run_script("geneticAlgorithim.py", "geneticAlgorithm", df)
 
         # Main agent logic
-        print(f"\nRunning agent (triggered by {changed_file or 'initial run'})")
-        print("Our AI AGent Now fetching FActs From the KB")
+        print("\nRunning AI Detective Agent")
+        print("Fetching facts from the Prolog KB")
         new_suspect = f"suspect_{uuid.uuid4().hex[:8]}"
         add_suspect_to_kb(new_suspect, 'yes', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'yes', 'no', 'Chicago')
         print(f"Added new suspect {new_suspect} to KB")
         prolog.query("sortAllSuspects.")
-        print("\nFinding path from Chicago to Miami with no hueristic (BFS)")
+        print("\nFinding path from Chicago to Miami with no heuristic (BFS)")
         find_path('chicago', 'miami', use_heuristic=False)
-        print("\nFinding path from Chicago to Miami with hueristic (A*)")
+        print("\nFinding path from Chicago to Miami with heuristic (A*)")
         find_path('chicago', 'miami', use_heuristic=True)
         run_bfs_with_prolog('chicago')
         run_astar_with_prolog('chicago', 'miami')
         run_genetic_with_prolog()
-        print("We get the facts from the CSV file and integerated with algorithms")
+        print("Integrated facts from CSV with algorithms")
 
     except Exception as e:
         print(f"Error running agent: {e}")
 
-# Main function with file watching
-def main():
-    print("Starting AI Detective Agent with file watching for ALL files...")
-    event_handler = FileChangeHandler(run_agent)
-    observer = Observer()
-    observer.schedule(event_handler, path='/app', recursive=False)
-    observer.start()
-    try:
-        run_agent()  # Initial run
-        while True:
-            time.sleep(1)  # Keep container running
-    except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
-
 if __name__ == "__main__":
-    main()
+    run_agent()

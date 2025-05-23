@@ -96,10 +96,10 @@ def aStarSearch(graph, start, goal):
 
 # Step 3: Runing A* Algorithm with Example Cities
 # --------------------------------------------
-start_city = "Anchorage"
-goal_city = "Jefferson"
+startCity = "Anchorage"
+goalCity = "Jefferson"
 
-if start_city in crimeGraph and goal_city in crimeGraph:
-    aStarSearch(crimeGraph, start_city, goal_city)
+if startCity in crimeGraph and goalCity in crimeGraph:
+    aStarSearch(crimeGraph, startCity, goalCity)
 else:
-    print(f"Error: One or both cities not found in dataset: {start_city}, {goal_city}")
+    print(f"Error: One or both cities not found in dataset: {startCity}, {goalCity}")
