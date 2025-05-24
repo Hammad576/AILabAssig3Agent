@@ -1,8 +1,7 @@
 # My AI Detective Agent with CSV file Integrated
 # This program runs search algorithms with Prolog KB for crime detection
-# I have placed the data sets crime and suspects in the same directory
-# Please Installed the required dependencies 
-# and then Run "python3 runme.py"
+# Note: Place suspects.csv, US_Crime_DataSet.csv, kb.pl, and all Python scripts in the same folder
+# Run manually with `python3 runme.py`; file changes reflect immediately
 
 import pandas as pd
 from pyswip import Prolog
@@ -15,14 +14,38 @@ def run_agent():
     try:
         # Initialize Prolog and consult kb.pl
         prolog = Prolog()
+        print("Consulting Prolog file: kb.pl")
         prolog.consult('kb.pl')
 
         # Load suspects CSV
         dataset_path = "suspects.csv"
+        print(f"Loading suspects CSV: {dataset_path}")
         df = pd.read_csv(dataset_path)
+
+        # Function to query Prolog for suspect prioritization
+        def should_investigate(suspect, crime_type, location):
+            location_norm = location.lower()  # Normalize to lowercase
+            query = f"suspects_by_location('{crime_type}', '{location_norm}', '{suspect}', Reasons)"
+            result = list(prolog.query(query))
+            return bool(result), result
+
+        # Create crime_dict for BFS and A*
+        print("Building crime dictionary from suspects.csv")
+        crime_dict = {}
+        for _, row in df.iterrows():
+            city = str(row["Location"]).strip().lower()  # Normalize to lowercase
+            crime_type = str(row["CommittedMurder"]).strip() == 'yes' and 'murder' or 'other'
+            if city and crime_type:
+                if city not in crime_dict:
+                    crime_dict[city] = set()
+                should, reasons = should_investigate(row["Name"], 'murder', city)
+                if should:
+                    crime_dict[city].add(crime_type)
+                    print(f"Suspect {row['Name']} in {city} flagged for {crime_type}: {reasons}")
 
         # Function to load and run a Python script
         def run_script(script_name, function_name, *args):
+            print(f"Running script: {script_name}")
             spec = importlib.util.spec_from_file_location(script_name[:-3], script_name)
             module = importlib.util.module_from_spec(spec)
             sys.modules[script_name[:-3]] = module
@@ -30,36 +53,34 @@ def run_agent():
             func = getattr(module, function_name)
             return func(*args)
 
-        # Function to query Prolog for suspect prioritization
-        def should_investigate(suspect, crime_type, location):
-            query = f"suspects_by_location('{crime_type}', '{location}', '{suspect}', Reasons)"
-            result = list(prolog.query(query))
-            return bool(result), result
-
         # Function to query Prolog for path between cities
         def find_path(start_city, goal_city, use_heuristic=False):
+            start_city_norm = start_city.lower()  # Normalize to lowercase
+            goal_city_norm = goal_city.lower()    # Normalize to lowercase
             if not use_heuristic:
-                query = f"path_between('{start_city}', '{goal_city}', Path)"
+                query = f"path_between('{start_city_norm}', '{goal_city_norm}', Path)"
                 result = list(prolog.query(query))
                 if result:
-                    print(f"BFS Path from {start_city} to {goal_city}: {result[0]['Path']}")
+                    print(f"BFS Path from {start_city_norm} to {goal_city_norm}: {result[0]['Path']}")
                     return result[0]['Path']
                 else:
-                    print(f"No BFS path found from {start_city} to {goal_city}")
+                    print(f"No BFS path found from {start_city_norm} to {goal_city_norm}")
                     return None
             else:
-                query = f"path_with_hueristic('{start_city}', '{goal_city}', Path, Cost)"
+                query = f"path_with_hueristic('{start_city_norm}', '{goal_city_norm}', Path, Cost)"
+                print(f"Executing A* query: {query}")
                 result = list(prolog.query(query))
                 if result:
-                    print(f"A* Path from {start_city} to {goal_city}: {result[0]['Path']} (Cost: {result[0]['Cost']})")
+                    print(f"A* Path from {start_city_norm} to {goal_city_norm}: {result[0]['Path']} (Cost: {result[0]['Cost']})")
                     return result[0]['Path']
                 else:
-                    print(f"No A* path found from {start_city} to {goal_city}")
+                    print(f"No A* path found from {start_city_norm} to {goal_city_norm}")
                     return None
 
         # Function to add new suspect to Prolog KB
         def add_suspect_to_kb(name, has_gun, has_anger_issues, committed_murder, criminal_record, smokes_cigarette, reported_in_burglary, has_motive, in_debt, has_faked_id, location):
-            prolog.assertz(f"suspect('{name}', '{has_gun}', '{has_anger_issues}', '{committed_murder}', '{criminal_record}', '{smokes_cigarette}', '{reported_in_burglary}', '{has_motive}', '{in_debt}', '{has_faked_id}', '{location}')")
+            location_norm = location.lower()  # Normalize to lowercase
+            prolog.assertz(f"suspect('{name}', '{has_gun}', '{has_anger_issues}', '{committed_murder}', '{criminal_record}', '{smokes_cigarette}', '{reported_in_burglary}', '{has_motive}', '{in_debt}', '{has_faked_id}', '{location_norm}')")
             if has_gun == 'yes':
                 prolog.assertz(f"hasGun('{name}')")
             if has_anger_issues == 'yes':
@@ -78,34 +99,28 @@ def run_agent():
                 prolog.assertz(f"inDebt('{name}')")
             if has_faked_id == 'yes':
                 prolog.assertz(f"hasFakedID('{name}')")
-            prolog.assertz(f"location('{name}', '{location}')")
+            prolog.assertz(f"location('{name}', '{location_norm}')")
 
         # Wrapper to run BFS with Prolog guidance
-        def run_bfs_with_prolog(start_city):
+        def run_bfs_with_prolog(start_city, crime_dict):
             print("\nRunning BFS with Prolog Guidance")
-            crime_dict = {}
-            for _, row in df.iterrows():
-                city = str(row["Location"]).strip()
-                crime_type = str(row["CommittedMurder"]).strip() == 'yes' and 'murder' or 'other'
-                if city and crime_type:
-                    if city not in crime_dict:
-                        crime_dict[city] = set()
-                    should, _ = should_investigate(row["Name"], 'murder', city)
-                    if should:
-                        crime_dict[city].add(crime_type)
-            run_script("bfs.py", "bfsSearch", crime_dict, start_city)
+            start_city_norm = start_city.lower()  # Normalize to lowercase
+            run_script("bfs.py", "bfsSearch", crime_dict, start_city_norm)
 
         # Wrapper to run A* with Prolog guidance
-        def run_astar_with_prolog(start_city, goal_city):
+        def run_astar_with_prolog(start_city, goal_city, crime_dict):
             print("\nRunning A* with Prolog Guidance")
-            path = find_path(start_city, goal_city, use_heuristic=True)
+            start_city_norm = start_city.lower()  # Normalize to lowercase
+            goal_city_norm = goal_city.lower()    # Normalize to lowercase
+            path = find_path(start_city_norm, goal_city_norm, use_heuristic=True)
             if path:
                 print(f"Prolog-guided A* path: {path}")
             else:
-                run_script("aStar.py", "aStarSearch", crime_dict, start_city, goal_city)
+                print("Falling back to aStar.py")
+                run_script("aStar.py", "aStarSearch", crime_dict, start_city_norm, goal_city_norm)
 
         # Wrapper to run Genetic Algorithm with Prolog guidance
-        def run_genetic_with_prolog():
+        def run_genetic_with_prolog(df):
             print("\nRunning Genetic Algorithm with Prolog Guidance")
             run_script("geneticAlgorithim.py", "geneticAlgorithm", df)
 
@@ -117,16 +132,17 @@ def run_agent():
         print(f"Added new suspect {new_suspect} to KB")
         prolog.query("sortAllSuspects.")
         print("\nFinding path from Chicago to Miami with no heuristic (BFS)")
-        find_path('chicago', 'miami', use_heuristic=False)
+        find_path('Chicago', 'Miami', use_heuristic=False)
         print("\nFinding path from Chicago to Miami with heuristic (A*)")
-        find_path('chicago', 'miami', use_heuristic=True)
-        run_bfs_with_prolog('chicago')
-        run_astar_with_prolog('chicago', 'miami')
-        run_genetic_with_prolog()
+        find_path('Chicago', 'Miami', use_heuristic=True)
+        run_bfs_with_prolog('Chicago', crime_dict)
+        run_astar_with_prolog('Chicago', 'Miami', crime_dict)
+        run_genetic_with_prolog(df)
         print("Integrated facts from CSV with algorithms")
 
     except Exception as e:
         print(f"Error running agent: {e}")
+        raise  # Raise for debugging
 
 if __name__ == "__main__":
     run_agent()
