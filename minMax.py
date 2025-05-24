@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 # Load dataset (Your dataset import logic remains unchanged)
-dataset_path = "../US_Crime_DataSet.csv"
+dataset_path = "US_Crime_DataSet.csv"
 df = pd.read_csv(dataset_path, low_memory=False)  
 
 # Check if required columns exist

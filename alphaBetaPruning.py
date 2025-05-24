@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # Load the dataset
-dataset_path = "../US_Crime_DataSet.csv"
+dataset_path = "US_Crime_DataSet.csv"
 df = pd.read_csv(dataset_path, low_memory=False)
 
 # Data Cleaning: Remove rows with missing perpetrator details

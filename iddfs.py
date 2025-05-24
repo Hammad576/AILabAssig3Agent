@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Load dataset
-dataset_path = "../US_Crime_DataSet.csv"
+dataset_path = "US_Crime_DataSet.csv"
 df = pd.read_csv(dataset_path, low_memory=False)
 
 # Clean data and filter necessary columns

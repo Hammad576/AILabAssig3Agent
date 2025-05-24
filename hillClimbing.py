@@ -3,7 +3,7 @@ import pandas as pd
 import random
 
 # Step 1: Load the dataset
-dataset_path = "../US_Crime_DataSet.csv"  # Adjust the path if needed
+dataset_path = "US_Crime_DataSet.csv"  # Adjust the path if needed
 df = pd.read_csv(dataset_path, low_memory=False)
 
 # Step 2: Ensure required columns exist
