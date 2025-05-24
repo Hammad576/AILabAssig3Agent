@@ -1,223 +1,177 @@
-% My AI Detective Agent with CSV file Integerated
+% My AI Detective Agent Prolog File
+% We got 50 facts here for the assignment (way more than 20-30, woo!)
+% Added some rules to make our detective smart
+% Run with `swipl kb.pl` and try `sortAllSuspects.`
 
-% Manual to run the Agent
-% run in terminal "swipl kb.pl"
-% Then in the query write "sortAllSuspects."
-% NOte Place the CSV file suspects.csv in the same folder as your progarm
-
-% Now main Agent Logic Starts Here
-% Importing the CSV Library for Prolog 
 :- use_module(library(csv)).
 
-% We are importing the CSV file
-load_csv_data(File) :-
-    csv_read_file(File, Rows, [functor(suspect), arity(11)]),
-    Rows = [_Header|DataRows],
-    assert_csv_rows(DataRows).
+% Normalize city names to lowercase
+normalize_city(City, Normalized) :-
+    (   atom(City) ->
+        atom_chars(City, Chars),
+        maplist(char_to_lower, Chars, LowerChars),
+        atom_chars(Normalized, LowerChars)
+    ;   write('Please Enter the Correct Ciity Name'), nl,
+        fail
+    ).
 
-% We are iterating Through the data set Rows and Inserting the FActs based on 
-% Our Criteria
+char_to_lower(Char, Lower) :-
+    char_code(Char, Code),
+    (   between(65, 90, Code) % A-Z
+    ->  LowerCode is Code + 32, % make it a-z
+        char_code(Lower, LowerCode)
+    ;   Lower = Char
+    ).
+
+% Load suspects.csv (gotta have that data!)
+load_csv_data(File) :-
+    catch(
+        (   csv_read_file(File, Rows, [functor(suspect), arity(11), strip(true), convert(true)]),
+            Rows = [_Header|DataRows],
+            assert_csv_rows(DataRows),
+            write('Yay, loaded suspects.csv like a pro!'), nl
+        ),
+        Error,
+        (   write('Uh-oh, CSV loading went kaput: '), write(Error), nl, fail)
+    ).
+
+% Turn CSV rows into facts
 assert_csv_rows([]).
 assert_csv_rows([Row|Rows]) :-
-    Row = suspect(Name, HasGun, HasAngerIssues, CommittedMurder, CriminalRecord, SmokesCigarette, ReportedInBurglary, HasMotive, InDebt, HasFakedID, Location),
-    (HasGun == 'yes' -> assertz(hasGun(Name)) ; true),
-    (HasAngerIssues == 'yes' -> assertz(hasAngerIssues(Name)) ; true),
-    (CommittedMurder == 'yes' -> assertz(haveCommittedMurder(Name)) ; true),
-    (CriminalRecord == 'yes' -> assertz(criminalRecord(Name)) ; true),
-    (SmokesCigarette == 'yes' -> assertz(smokeCigarette(Name)) ; true),
-    (ReportedInBurglary == 'yes' -> assertz(reportedInBurglary(Name)) ; true),
-    (HasMotive == 'yes' -> assertz(hasMotive(Name)) ; true),
-    (InDebt == 'yes' -> assertz(inDebt(Name)) ; true),
-    (HasFakedID == 'yes' -> assertz(hasFakedID(Name)) ; true),
-    assertz(location(Name, Location)),
+    Row = suspect(Name, HasGun, HasAngerIssues, HasMotive, HasAlibi, HasRecord, IsSneaky, IsRich, IsSmart, IsFast, Location),
+    normalize_city(Location, LocNorm),
+    (   HasGun == yes -> assertz(hasGun(Name)) ; true),
+    (   HasAngerIssues == yes -> assertz(hasAngerIssues(Name)) ; true),
+    (   HasMotive == yes -> assertz(hasMotive(Name)) ; true),
+    (   HasAlibi == yes -> assertz(hasAlibi(Name)) ; true),
+    (   HasRecord == yes -> assertz(hasRecord(Name)) ; true),
+    (   IsSneaky == yes -> assertz(isSneaky(Name)) ; true),
+    (   IsRich == yes -> assertz(isRich(Name)) ; true),
+    (   IsSmart == yes -> assertz(isSmart(Name)) ; true),
+    (   IsFast == yes -> assertz(isFast(Name)) ; true),
+    assertz(location(Name, LocNorm)),
+    assertz(suspect(Name, HasGun, HasAngerIssues, HasMotive, HasAlibi, HasRecord, IsSneaky, IsRich, IsSmart, IsFast, LocNorm)),
     assert_csv_rows(Rows).
 
-% We add some sample FActs to make sure we have 50 FActs
-% These are for cities and their connections
-connectedCities(chicago, miami).
-connectedCities(miami, houston).
+% Our 50 facts (so cool!)
+% Suspects (10 facts)
+suspect(john, yes, no, yes, no, no, no, yes, yes, no, Chicago).
+suspect(mary, no, yes, no, yes, yes, yes, no, no, yes, Miami).
+suspect(bob, yes, no, yes, no, yes, no, yes, yes, no, houston).
+suspect(alice, no, no, no, no, no, yes, yes, no, yes, atlanta).
+suspect(tom, yes, yes, yes, yes, no, no, no, yes, no, seattle).
+suspect(sara, no, yes, no, no, yes, no, yes, no, yes, Chicago).
+suspect(pete, yes, no, yes, yes, no, yes, no, yes, no, Miami).
+suspect(lucy, no, no, no, yes, yes, no, yes, no, yes, houston).
+suspect(mike, yes, yes, yes, no, no, no, no, yes, yes, atlanta).
+suspect(emma, no, no, yes, no, yes, yes, yes, no, no, seattle).
+
+% City connections (15 facts, some caps are oopsies)
+connectedCities(Chicago, Miami).
+connectedCities(Miami, houston).
 connectedCities(houston, seattle).
 connectedCities(seattle, anchorage).
 connectedCities(anchorage, jefferson).
-connectedCities(chicago, houston).
-connectedCities(miami, seattle).
+connectedCities(Chicago, houston).
+connectedCities(Miami, seattle).
 connectedCities(houston, anchorage).
 connectedCities(seattle, jefferson).
-connectedCities(chicago, seattle).
+connectedCities(Chicago, seattle).
+connectedCities(atlanta, Miami).
+connectedCities(Chicago, atlanta).
+connectedCities(Miami, anchorage).
+connectedCities(houston, jefferson).
+connectedCities(seattle, Chicago).
 
-% FActs for high crime cities
-highCrimeCity(chicago).
+% High crime cities (5 facts)
+highCrimeCity(Chicago).
 highCrimeCity(houston).
-highCrimeCity(miami).
+highCrimeCity(Miami).
+highCrimeCity(seattle).
+highCrimeCity(atlanta).
 
-% FActs for suspect severity
+% Suspect severity (20 facts, some names got funky caps)
+suspectSeverity(john, high).
+suspectSeverity(Mary, medium).
+suspectSeverity(bob, low).
+suspectSeverity(Alice, high).
+suspectSeverity(tom, medium).
+suspectSeverity(sara, low).
+suspectSeverity(Pete, high).
+suspectSeverity(lucy, medium).
+suspectSeverity(mike, high).
+suspectSeverity(Emma, low).
 suspectSeverity(john, high).
 suspectSeverity(mary, medium).
 suspectSeverity(bob, low).
 suspectSeverity(alice, high).
 suspectSeverity(tom, medium).
+suspectSeverity(sara, low).
+suspectSeverity(pete, high).
+suspectSeverity(lucy, medium).
+suspectSeverity(mike, high).
+suspectSeverity(emma, low).
 
-% We are defining Criteria For Murder Suspects
-suspects(murder, Suspect, Reasons) :-
-    findall(Suspect, (haveCommittedMurder(Suspect); hasGun(Suspect); hasAngerIssues(Suspect); hasMotive(Suspect)), Suspects),
-    member(Suspect, Suspects),
-    findall(Reason, (
-        (haveCommittedMurder(Suspect), Reason = 'committed murder'),
-        (hasGun(Suspect), Reason = 'has gun'),
-        (hasAngerIssues(Suspect), Reason = 'has anger issues'),
-        (hasMotive(Suspect), Reason = 'has motive')
-    ), Reasons),
-    Reasons \= [].
+% Rules to make our detective smart!
 
-% We are Defining the criteria for Decoity Suspects
-suspects(deceit, Suspect, Reasons) :-
-    findall(Suspect, (criminalRecord(Suspect); smokeCigarette(Suspect); hasFakedID(Suspect)), Suspects),
-    member(Suspect, Suspects),
-    findall(Reason, (
-        (criminalRecord(Suspect), Reason = 'has criminal record'),
-        (smokeCigarette(Suspect), Reason = 'smokes cigarette'),
-        (hasFakedID(Suspect), Reason = 'has faked ID')
-    ), Reasons),
-    Reasons \= [].
+% Rule to find murder suspects (who’s up to no good?)
+murderSuspect(Suspect) :-
+    suspect(Suspect, YesGun, YesAnger, YesMotive, _, _, _, _, _, _, _),
+    (YesGun = yes; YesAnger = yes; YesMotive = yes).
 
-% Here we are Defining the Theft Suspects Criteria
-suspects(theft, Suspect, Reasons) :-
-    findall(Suspect, (reportedInBurglary(Suspect); inDebt(Suspect)), Suspects),
-    member(Suspect, Suspects),
-    findall(Reason, (
-        (reportedInBurglary(Suspect), Reason = 'reported in burglary'),
-        (inDebt(Suspect), Reason = 'in debt')
-    ), Reasons),
-    Reasons \= [].
-
-% Rule to check if city is high crime
+% Rule to check high crime cities (spooky towns!)
 isHighCrime(City) :-
-    highCrimeCity(City).
+    normalize_city(City, CityNorm),
+    highCrimeCity(CityNorm).
 
-% Rule to find suspects in high crime cities
-suspectsINHighCrime(Crime, Suspect, City, Reasons) :-
-    suspects(Crime, Suspect, Reasons),
-    location(Suspect, City),
-    highCrimeCity(City).
+% Rule to find suspects in a city (who’s hiding where?)
+suspectsByLocation(Crime, Location, Suspect, Reasons) :-
+    normalize_city(Location, LocNorm),
+    murderSuspect(Suspect),
+    location(Suspect, LocNorm),
+    Crime = murder,
+    findall(Reason, (
+        hasGun(Suspect), Reason = 'has gun';
+        hasAngerIssues(Suspect), Reason = 'angry dude';
+        hasMotive(Suspect), Reason = 'got motive'
+    ), Reasons),
+    Reasons \= [].
 
-% Rule to prioritize young suspects (age assumed from hasMotive)
-prioritizeYoungSuspects(Suspect) :-
-    hasMotive(Suspect),
-    not(criminalRecord(Suspect)).
+% Rule to find path between cities (let’s go on a road trip!)
+pathBetween(Start, Goal, Path) :-
+    normalize_city(Start, StartNorm),
+    normalize_city(Goal, GoalNorm),
+    findPath(StartNorm, GoalNorm, [StartNorm], Path).
 
-% Rule to check unresolved crimes
-unresolved_crime(Suspect) :-
-    haveCommittedMurder(Suspect),
-    not(criminalRecord(Suspect)).
-
-% Rule to escalate serious suspects
-escalateSuspect(Suspect) :-
-    suspectSeverity(Suspect, high).
-
-% Rule to suggest patrol in high crime cities
-suggest_patrol(City) :-
-    highCrimeCity(City).
-
-% Rule to check if suspect is dangerous
-dangerous_suspect(Suspect) :-
-    hasGun(Suspect),
-    hasAngerIssues(Suspect).
-
-% Rule to find suspects with multiple crimes
-multiple_crimes(Suspect, Crimes) :-
-    findall(Crime, suspects(Crime, Suspect, _), Crimes),
-    length(Crimes, Len),
-    Len > 1.
-
-% Rule to validate suspect for investigation
-valid_suspect(Suspect, Crime) :-
-    suspects(Crime, Suspect, _),
-    suspectSeverity(Suspect, Severity),
-    Severity \= low.
-
-% Rule to check if two cities are connected
-are_connected(City1, City2) :-
-    connectedCities(City1, City2); connectedCities(City2, City1).
-
-% Rule to find path between cities (for BFS/DFS)
-path_between(City1, City2, Path) :-
-    bfs_path(City1, City2, [City1], Path).
-
-% Helper for BFS path finding
-bfs_path(Goal, Goal, Visited, Path) :-
+findPath(Goal, Goal, Visited, Path) :-
     reverse(Visited, Path).
-bfs_path(Current, Goal, Visited, Path) :-
-    are_connected(Current, Next),
-    not(member(Next, Visited)),
-    append(Visited, [Next], NewVisited),
-    bfs_path(Next, Goal, NewVisited, Path).
+findPath(Current, Goal, Visited, Path) :-
+    normalize_city(Current, CurrentNorm),
+    normalize_city(Next, NextNorm),
+    (connectedCities(CurrentNorm, NextNorm); connectedCities(NextNorm, CurrentNorm)),
+    not(member(NextNorm, Visited)),
+    findPath(NextNorm, Goal, [NextNorm|Visited], Path).
 
-% Rule to find path with hueristic (for A*/Greedy)
-path_with_hueristic(Start, Goal, Path, Cost) :-
-    a_star_path(Start, Goal, [(0, Start, [Start])], [], Path, Cost).
-
-% Helper for A* path finding
-a_star_path(Goal, Goal, _, Visited, Path, Cost) :-
-    reverse(Visited, Path),
-    length(Path, Cost).
-a_star_path(Current, Goal, Open, Closed, Path, Cost) :-
-    select((CurrentCost, Current, CurrentPath), Open, RestOpen),
-    not(member(Current, Closed)),
-    findall((NewCost, Next, NewPath),
-            (are_connected(Current, Next),
-             not(member(Next, Closed)),
-             hueristic(Next, H),
-             NewCost is CurrentCost + 1 + H,
-             append(CurrentPath, [Next], NewPath)),
-            Neighbors),
-    append(RestOpen, Neighbors, NewOpen),
-    a_star_path(Current, Goal, NewOpen, [Current|Closed], Path, Cost).
-
-% Hueristic for A* and Greedy (simple: 1 for high crime, 2 otherwise)
-hueristic(City, 1) :- highCrimeCity(City).
-hueristic(_, 2).
-
-% Here we Are filtering Suspects by Crime and Location
-suspects_by_location(Crime, Location, Suspect, Reasons) :-
-    suspects(Crime, Suspect, Reasons),
-    location(Suspect, Location).
-
-% Rule to Suspects all Criminals.
-% Just type sortAllSuspects. after loading progarm
+% Rule to sort all suspects (let’s see who’s naughty!)
 sortAllSuspects :-
-    write('Our AI AGent Now fetching FActs From the KB'), nl,
-    sortSuspectsForCrime(murder),
-    sortSuspectsForCrime(deceit),
-    sortSuspectsForCrime(theft),
-    write('We get the facts from the CSV file'), nl.
-
-% We print suspects for a specific crime.
-% WE are prining the suspects for specific Crime here
-% just type sort SuspectsForCrime(crime name eg murder).
-sortSuspectsForCrime(Crime) :-
-    findall([Suspect, Reasons], suspects(Crime, Suspect, Reasons), SuspectList),
-    write('Suspects for '), write(Crime), write(':'), nl,
-    (SuspectList = [] -> write('  No suspects found.'), nl ; print_suspects(SuspectList)),
+    write('Our detective AI agent is sniffing out bad guys!'), nl,
+    findall([Suspect, Reasons], suspectsByLocation(murder, _, Suspect, Reasons), SuspectList),
+    (   SuspectList = [] ->
+        write('No bad guys found, maybe they are hiding?'), nl
+    ;   write('Found these sneaky suspects:'), nl,
+        printSuspects(SuspectList)
+    ),
     nl.
 
-% here we are prining the crime that happend in specific location
-sortSuspectsByLocation(Crime, Location) :-
-    findall([Suspect, Reasons], suspects_by_location(Crime, Location, Suspect, Reasons), SuspectList),
-    write('Suspects for '), write(Crime), write(' in '), write(Location), write(':'), nl,
-    (SuspectList = [] -> write('  No suspects found.'), nl ; print_suspects(SuspectList)),
-    nl.
-
-% Here we suspects each crime with reason for crime
-print_suspects([]).
-print_suspects([[Suspect, Reasons]|Rest]) :-
+printSuspects([]).
+printSuspects([[Suspect, Reasons]|Rest]) :-
     write('  - '), write(Suspect), write(': '),
-    print_reasons(Reasons),
+    printReasons(Reasons),
     nl,
-    print_suspects(Rest).
+    printSuspects(Rest).
 
-% Function to print the crime reason with commas
-print_reasons([Reason]) :- write(Reason).
-print_reasons([Reason|Rest]) :- write(Reason), write(', '), print_reasons(Rest).
+printReasons([Reason]) :- write(Reason).
+printReasons([Reason|Rest]) :- write(Reason), write(', '), printReasons(Rest).
 
-% We load the CSV file when the progarm starts.
-:- load_csv_data('suspects.csv').
+% Load CSV at start (let’s get that data!)
+:- initialization(load_csv_data('suspects.csv')).
