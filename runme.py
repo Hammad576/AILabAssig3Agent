@@ -383,6 +383,15 @@ def run_agent():
                 print(f"Step 6: Decision: No crime data for {city} in KB, expand investigation!")
             print("Step 6: Finished making decision!")
 
+        def decide_criminal_city(kb_result):
+            print("Step 6: Our detective AI agent is making a decision based on KB knowledge as per assignment requirement!")
+            if kb_result and len(kb_result) == 2:
+                city, count = kb_result
+                print(f"Step 6: Decision: Increase patrols in {city} with {count} crimes!")
+            else:
+                print("Step 6: Decision: No most criminal city found in KB, analyze more data!")
+            print("Step 6: Finished making decision!")
+
         # Sherlock Holmes Menu
         while True:
             print("\n=====================================")
@@ -483,17 +492,17 @@ def run_agent():
                     decide_path([])
 
             elif choice == '7':
-                print("\nStep 3: Our detective AI agent is running Hill Climbing for crime hotspots as per assignment requirement!")
-                result = run_script("hillClimbing.py", "hill_climbing", "chicago")
-                if result and len(result) == 2:
-                    city, count = result
-                    print(f"Step 3: Hill Climbing found hotspot: {city} with {count} crimes")
-                    add_hotspot(city, count)
-                    kb_hotspots = query_hotspots()
-                    decide_hotspots(kb_hotspots)
+                print("\nStep 3: Our detective AI agent is running Hill Climbing to find the city with most crimes as per assignment requirement!")
+                result = run_script("hillClimbing.py", "hill_climbing_search")
+                if result and isinstance(result, dict) and "City" in result and "KB_Result" in result:
+                    city = result["City"]
+                    crime_count = result["CrimeCount"]
+                    kb_result = result["KB_Result"]
+                    print(f"Step 3: Hill Climbing found most criminal city: {city} with {crime_count} crimes")
+                    decide_criminal_city(kb_result)
                 else:
-                    print("Step 3: Hill Climbing failed to find a hotspot!")
-                    decide_hotspots([])
+                    print("Step 3: Hill Climbing failed to find the most criminal city!")
+                    decide_criminal_city([])
 
             elif choice == '8':
                 print("\nStep 3: Our detective AI agent is running MinMax for risky cities as per assignment requirement!")

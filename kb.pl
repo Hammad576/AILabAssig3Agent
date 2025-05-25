@@ -42,8 +42,11 @@
 :- dynamic policeAssignment/2.
 :- dynamic cityCrime/2.
 :- dynamic pathCity/2.
-
+:- dynamic mostCriminalCity/2.
  
+
+% Rules for Hill Climbing (most criminal city)
+mostCriminal(City, Count) :- mostCriminalCity(City, Count).
 
 % Rules for BFS (city-crime relations)
 cityCrimeRelation(City, Crime) :- cityCrime(City, Crime).
