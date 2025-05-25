@@ -319,6 +319,15 @@ def run_agent():
                 print("Step 6: Decision: No assignments in KB, redistribute police!")
             print("Step 6: Finished making decision!")
 
+        # Make decision for deployment
+        def decide_deployment(cities):
+            print("Step 6: Our detective AI agent is making a decision based on KB knowledge as per assignment requirement!")
+            if cities:
+                print(f"Step 6: Decision: Deploy police to high-crime cities: {cities}!")
+            else:
+                print("Step 6: Decision: No optimal deployment found, analyze more data!")
+            print("Step 6: Finished making decision!")
+            
         # Make decision for hotspots
         def decide_hotspots(hotspots):
             print("Step 6: Our detective AI agent is making a decision based on KB knowledge as per assignment requirement!")
@@ -403,17 +412,16 @@ def run_agent():
                     decide_path(None)
 
             elif choice == '3':
-                print("\nStep 3: Our detective AI agent is running Genetic Algorithm for police deployment as per assignment requirement!")
-                strategies = run_script("geneticAlgorithim.py", "genetic_algorithm", df)
-                if strategies and isinstance(strategies, list) and len(strategies) > 0:
-                    best_strategy = strategies[0]
-                    print(f"Step 3: Genetic Algorithm found strategy: {best_strategy}")
-                    add_genetic_route(best_strategy)
-                    kb_routes = query_genetic_routes()
-                    decide_genetic_routes(kb_routes)
+                print("\nStep 3: Our detective AI agent is running Genetic Algorithm to find optimal police deployment cities as per assignment requirement!")
+                result = run_script("geneticAlgorithim.py", "genetic_algorithm")
+                if result and isinstance(result, dict) and "Strategy" in result and "KB_Strategy" in result:
+                    strategy = result["Strategy"]
+                    kb_strategy = result["KB_Strategy"]
+                    print(f"Step 3: Genetic Algorithm found deployment strategy: {strategy}")
+                    decide_deployment(kb_strategy)
                 else:
-                    print("Step 3: Genetic Algorithm failed to find strategies!")
-                    decide_genetic_routes([])
+                    print("Step 3: Genetic Algorithm failed to find a deployment strategy!")
+                    decide_deployment([])
 
             elif choice == '4':
                 print("\nStep 3: Our detective AI agent is running CSP for police assignments as per assignment requirement!")

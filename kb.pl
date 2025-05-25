@@ -24,6 +24,12 @@
 :- dynamic riskyCityFact/1.
 :- dynamic victimRaceFact/2.
 :- dynamic suspectScoreFact/2.
+:- dynamic raceCrimeFact/2.
+:- dynamic connectedCities/2.
+:- dynamic deploymentCity/1.
+
+% Rules for Genetic Algorithm (deployment cities)
+optimalDeployment(City) :- deploymentCity(City).
 
 % Normalize city/race names to lowercase
 normalize_term(Term, Normalized) :-
