@@ -374,6 +374,15 @@ def run_agent():
                 print("Step 6: Decision: No valid police assignments found, reassess strategy!")
             print("Step 6: Finished making decision!")
 
+        # Make decision for BFS city-crime relations
+        def decide_city_crimes(city, crimes):
+            print("Step 6: Our detective AI agent is making a decision based on KB knowledge as per assignment requirement!")
+            if crimes:
+                print(f"Step 6: Decision: Increase patrols in {city} targeting crimes: {crimes}!")
+            else:
+                print(f"Step 6: Decision: No crime data for {city} in KB, expand investigation!")
+            print("Step 6: Finished making decision!")
+
         # Sherlock Holmes Menu
         while True:
             print("\n=====================================")
@@ -446,17 +455,18 @@ def run_agent():
                     decide_assignments([])
 
             elif choice == '5':
-                print("\nStep 3: Our detective AI agent is running BFS to explore city crimes as per assignment requirement!")
-                result = run_script("bfs.py", "bfsSearch", {"chicago": set()}, "chicago")
-                if result:
-                    crimes = result.get("chicago", set()) or ["murder", "robbery"]  # Fallback
-                    print(f"Step 3: BFS found crimes in chicago: {crimes}")
-                    add_race_crimes("Black", crimes)
-                    kb_crimes = query_race_crimes("Black")
-                    decide_race_crimes("Black", kb_crimes)
+                print("\nStep 3: Our detective AI agent is running BFS to explore crimes by city as per assignment requirement!")
+                start_city = "anchorage"
+                result = run_script("bfs.py", "bfs_explore", start_city)
+                if result and isinstance(result, dict) and "CityCrimes" in result and "KB_CityCrimes" in result:
+                    city_crimes = result["CityCrimes"]
+                    kb_crimes = result["KB_CityCrimes"]
+                    city = next(iter(city_crimes), "Unknown")
+                    print(f"Step 3: BFS found crimes for {city}: {city_crimes.get(city, [])}")
+                    decide_city_crimes(city, kb_crimes)
                 else:
-                    print("Step 3: BFS failed to find crimes!")
-                    decide_race_crimes("Black", [])
+                    print("Step 3: BFS failed to find city-crime relations!")
+                    decide_city_crimes("Chicago", [])
 
             elif choice == '6':
                 print("\nStep 3: Our detective AI agent is running Greedy Best-First Search to find a path as per assignment requirement!")

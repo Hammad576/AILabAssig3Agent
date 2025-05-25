@@ -31,6 +31,14 @@
 :- dynamic connectedCities/2.
 :- dynamic deploymentCity/1.
 :- dynamic policeAssignment/2.
+:- dynamic raceCrimeFact/2.
+:- dynamic connectedCities/2.
+:- dynamic deploymentCity/1.
+:- dynamic policeAssignment/2.
+:- dynamic cityCrime/2.
+
+% Rules for BFS (city-crime relations)
+cityCrimeRelation(City, Crime) :- cityCrime(City, Crime).
 
 % Rules for CSP (police assignments)
 optimalAssignment(City, Units) :- policeAssignment(City, Units).
