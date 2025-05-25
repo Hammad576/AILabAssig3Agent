@@ -390,13 +390,13 @@ def run_agent():
 
             elif choice == '2':
                 print("\nStep 3: Our detective AI agent is running A* to find a path between cities as per assignment requirement!")
-                start_city = "chicago"
-                goal_city = "miami"
-                path = run_script("aStar.py", "aStarSearch", {}, start_city, goal_city)
-                if path:
+                start_city = "juneau"
+                goal_city = "bethel"
+                result = run_script("aStar.py", "aStarSearch", start_city, goal_city)
+                if result and isinstance(result, dict) and "Path" in result and "KB_Path" in result:
+                    path = result["Path"]
+                    kb_path = result["KB_Path"]
                     print(f"Step 3: A* found path: {path}")
-                    add_search_path(path)
-                    kb_path = query_path(start_city, goal_city)
                     decide_path(kb_path)
                 else:
                     print("Step 3: A* failed to find a path!")
