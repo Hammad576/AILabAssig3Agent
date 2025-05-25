@@ -518,13 +518,18 @@ def run_agent():
                     decide_deployment([])
 
             elif choice == '9':
-                print("\nStep 3: Our detective AI agent is running IDDFS for victim races as per assignment requirement!")
+                print("\nStep 3: Our detective AI agent is running IDDFS to find victim races as per assignment requirement!")
                 state = "Michigan"
                 race = "Black"
-                result = run_script("iddfs.py", "iddfs", {"Michigan": ["Black"]}, "Michigan", "Black", 0, 5)
-                if result:
-                    print(f"Step 3: IDDFS found victim race: {race} in {state}")
-                    add_victim_race(state, race)
+                result = run_script("iddfs.py", "iddfs_search", state, race)
+                if result and isinstance(result, dict) and "State" in result and "KB_Result" in result:
+                    state = result["State"]
+                    race = result["Race"]
+                    found = result["Found"]
+                    kb_result = result["KB_Result"]
+                    print(f"Step 3: IDDFS {'found' if found else 'did not find'} victim race: {race} in {state}")
+                    if found:
+                        add_victim_race(state, race)
                     kb_races = query_victim_races(state)
                     decide_victim_races(state, kb_races)
                 else:

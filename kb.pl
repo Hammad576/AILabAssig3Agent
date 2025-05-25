@@ -44,11 +44,13 @@
 :- dynamic pathCity/2.
 :- dynamic mostCriminalCity/2.
 :- dynamic riskyCity/2.
+:- dynamic victimRaceFact/2.
 
 % Rules for MinMax (riskiest city)
 risky(City, Score) :- riskyCity(City, Score).
 
- 
+% Rules for IDDFS (victim race)
+victimRace(State, Race) :- victimRaceFact(State, Race).
 
 % Rules for Hill Climbing (most criminal city)
 mostCriminal(City, Count) :- mostCriminalCity(City, Count).
