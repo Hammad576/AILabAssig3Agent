@@ -1,11 +1,31 @@
 % My AI Detective Agent Prolog File
-% Got 50 facts for the assignmetn (way more than 20-30, woo!)
+% Got 50 facts for the assignment (way more than 20-30, woo!)
 % Rules to make our detective super smart
 % Run with `swipl kb.pl` and try `sortAllSuspects.` or `raceCrime(Race, Crime).`
 
 :- use_module(library(csv)).
 
-% Normalize city/race names to lowercase (no Chicago vs chicago or Black vs black drama!)
+% Declare predicates as dynamic to allow CSV assertions
+:- dynamic suspect/11.
+:- dynamic hasGun/1.
+:- dynamic hasAngerIssues/1.
+:- dynamic hasMotive/1.
+:- dynamic hasAlibi/1.
+:- dynamic hasRecord/1.
+:- dynamic isSneaky/1.
+:- dynamic isRich/1.
+:- dynamic isSmart/1.
+:- dynamic isFast/1.
+:- dynamic location/2.
+:- dynamic raceCrimeFact/2.
+:- dynamic connectedCities/2.
+:- dynamic policeAssignment/2.
+:- dynamic hotspot/2.
+:- dynamic riskyCityFact/1.
+:- dynamic victimRaceFact/2.
+:- dynamic suspectScoreFact/2.
+
+% Normalize city/race names to lowercase
 normalize_term(Term, Normalized) :-
     (   atom(Term) ->
         atom_chars(Term, Chars),
@@ -17,13 +37,13 @@ normalize_term(Term, Normalized) :-
 
 char_to_lower(Char, Lower) :-
     char_code(Char, Code),
-    (   between(65, 90, Code) % A-Z
-    ->  LowerCode is Code + 32, % make a-z
+    (   between(65, 90, Code) -> % A-Z
+        LowerCode is Code + 32, % make a-z
         char_code(Lower, LowerCode)
     ;   Lower = Char
     ).
 
-% Load suspects.csv (grabbing that juicy data!)
+% Load suspects.csv
 load_csv_data(File) :-
     catch(
         (   csv_read_file(File, Rows, [functor(suspect), arity(11), strip(true), convert(true)]),
@@ -55,52 +75,52 @@ assert_csv_rows([Row|Rows]) :-
 
 % Our 50 facts (so awesome!)
 % Suspects (10 facts)
-suspect(john, yes, no, yes, no, no, no, yes, yes, no, Chicago).
-suspect(mary, no, yes, no, yes, yes, yes, no, no, yes, Miami).
+suspect(john, yes, no, yes, no, no, no, yes, yes, no, chicago).
+suspect(mary, no, yes, no, yes, yes, yes, no, no, yes, miami).
 suspect(bob, yes, no, yes, no, yes, no, yes, yes, no, houston).
 suspect(alice, no, no, no, no, no, yes, yes, no, yes, atlanta).
 suspect(tom, yes, yes, yes, yes, no, no, no, yes, no, seattle).
-suspect(sara, no, yes, no, no, yes, no, yes, no, yes, Chicago).
-suspect(pete, yes, no, yes, yes, no, yes, no, yes, no, Miami).
+suspect(sara, no, yes, no, no, yes, no, yes, no, yes, chicago).
+suspect(pete, yes, no, yes, yes, no, yes, no, yes, no, miami).
 suspect(lucy, no, no, no, yes, yes, no, yes, no, yes, houston).
 suspect(mike, yes, yes, yes, no, no, no, no, yes, yes, atlanta).
 suspect(emma, no, no, yes, no, yes, yes, yes, no, no, seattle).
 
-% City connections (15 facts, some caps are goofy)
-connectedCities(Chicago, Miami).
-connectedCities(Miami, houston).
+% City connections (15 facts)
+connectedCities(chicago, miami).
+connectedCities(miami, houston).
 connectedCities(houston, seattle).
 connectedCities(seattle, anchorage).
-connectedCities(anchorage, jefferson).
-connectedCities(Chicago, houston).
-connectedCities(Miami, seattle).
+connectedCities(anchorage, juneau).
+connectedCities(chicago, houston).
+connectedCities(miami, seattle).
 connectedCities(houston, anchorage).
-connectedCities(seattle, jefferson).
-connectedCities(Chicago, seattle).
-connectedCities(atlanta, Miami).
-connectedCities(Chicago, atlanta).
-connectedCities(Miami, anchorage).
-connectedCities(houston, jefferson).
-connectedCities(seattle, Chicago).
+connectedCities(seattle, juneau).
+connectedCities(chicago, seattle).
+connectedCities(atlanta, miami).
+connectedCities(chicago, atlanta).
+connectedCities(miami, anchorage).
+connectedCities(houston, juneau).
+connectedCities(seattle, chicago).
 
 % High crime cities (5 facts)
-highCrimeCity(Chicago).
+highCrimeCity(chicago).
 highCrimeCity(houston).
-highCrimeCity(Miami).
+highCrimeCity(miami).
 highCrimeCity(seattle).
 highCrimeCity(atlanta).
 
-% Suspect severity (20 facts, some names are wacky)
+% Suspect severity (20 facts)
 suspectSeverity(john, high).
-suspectSeverity(Mary, medium).
+suspectSeverity(mary, medium).
 suspectSeverity(bob, low).
-suspectSeverity(Alice, high).
+suspectSeverity(alice, high).
 suspectSeverity(tom, medium).
 suspectSeverity(sara, low).
-suspectSeverity(Pete, high).
+suspectSeverity(pete, high).
 suspectSeverity(lucy, medium).
 suspectSeverity(mike, high).
-suspectSeverity(Emma, low).
+suspectSeverity(emma, low).
 suspectSeverity(john, high).
 suspectSeverity(mary, medium).
 suspectSeverity(bob, low).
@@ -112,19 +132,19 @@ suspectSeverity(lucy, medium).
 suspectSeverity(mike, high).
 suspectSeverity(emma, low).
 
-% Rules to make our detective brillant!
+% Rules to make our detective brilliant!
 
-% Rule for murder suspects (who’s looking guilty?)
+% Rule for murder suspects
 murderSuspect(Suspect) :-
     suspect(Suspect, YesGun, YesAnger, YesMotive, _, _, _, _, _, _, _),
     (YesGun = yes; YesAnger = yes; YesMotive = yes).
 
-% Rule to check high crime cities (spooky places!)
+% Rule to check high crime cities
 isHighCrime(City) :-
     normalize_term(City, CityNorm),
     highCrimeCity(CityNorm).
 
-% Rule to find suspects in a city (who’s causing trouble where?)
+% Rule to find suspects in a city
 suspectsByLocation(Crime, Location, Suspect, Reasons) :-
     normalize_term(Location, LocNorm),
     murderSuspect(Suspect),
@@ -137,7 +157,7 @@ suspectsByLocation(Crime, Location, Suspect, Reasons) :-
     ), Reasons),
     Reasons \= [].
 
-% Rule to find path between cities (road trip time!)
+% Rule to find path between cities
 pathBetween(Start, Goal, Path) :-
     normalize_term(Start, StartNorm),
     normalize_term(Goal, GoalNorm),
@@ -149,10 +169,10 @@ findPath(Current, Goal, Visited, Path) :-
     normalize_term(Current, CurrentNorm),
     normalize_term(Next, NextNorm),
     (connectedCities(CurrentNorm, NextNorm); connectedCities(NextNorm, CurrentNorm)),
-    not(member(NextNorm, Visited)),
+    \+ member(NextNorm, Visited),
     findPath(NextNorm, Goal, [NextNorm|Visited], Path).
 
-% Rule to store/query race-based crimes (from DFS/BFS)
+% Rule to store/query race-based crimes
 raceCrime(Race, Crime) :-
     raceCrimeFact(Race, Crime).
 
@@ -184,7 +204,7 @@ victimRace(State, Race) :-
 suspectScore(Age, Score) :-
     suspectScoreFact(Age, Score).
 
-% Rule to list all suspects (who’s on the naughty list?)
+% Rule to list all suspects
 sortAllSuspects :-
     write('Our detective AI agent is sniffing out bad guys!'), nl,
     findall([Suspect, Reasons], suspectsByLocation(murder, _, Suspect, Reasons), SuspectList),
@@ -205,5 +225,5 @@ printSuspects([[Suspect, Reasons]|Rest]) :-
 printReasons([Reason]) :- write(Reason).
 printReasons([Reason|Rest]) :- write(Reason), write(', '), printReasons(Rest).
 
-% Load CSV at start (data time!)
+% Load CSV at start
 :- initialization(load_csv_data('suspects.csv')).
