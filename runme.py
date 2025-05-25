@@ -469,18 +469,18 @@ def run_agent():
                     decide_city_crimes("Chicago", [])
 
             elif choice == '6':
-                print("\nStep 3: Our detective AI agent is running Greedy Best-First Search to find a path as per assignment requirement!")
-                start_city = "chicago"
-                goal_city = "miami"
-                path = run_script("greedyFirstSearch.py", "greedyBestFirstSearch", {}, start_city, goal_city)
-                if path:
-                    print(f"Step 3: Greedy found path: {path}")
-                    add_search_path(path)
-                    kb_path = query_path(start_city, goal_city)
+                print("\nStep 3: Our detective AI agent is running Greedy Best-First to find a path between cities as per assignment requirement!")
+                start_city = "anchorage"
+                goal_city = "juneau"
+                result = run_script("greedyFirstSearch.py", "greedy_best_first_search", start_city, goal_city)
+                if result and isinstance(result, dict) and "Path" in result and "KB_Path" in result:
+                    path = result["Path"]
+                    kb_path = result["KB_Path"]
+                    print(f"Step 3: Greedy Best-First found path: {path}")
                     decide_path(kb_path)
                 else:
-                    print("Step 3: Greedy failed to find a path!")
-                    decide_path(None)
+                    print("Step 3: Greedy Best-First failed to find a path!")
+                    decide_path([])
 
             elif choice == '7':
                 print("\nStep 3: Our detective AI agent is running Hill Climbing for crime hotspots as per assignment requirement!")

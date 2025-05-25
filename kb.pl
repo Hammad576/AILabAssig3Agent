@@ -36,6 +36,14 @@
 :- dynamic deploymentCity/1.
 :- dynamic policeAssignment/2.
 :- dynamic cityCrime/2.
+:- dynamic raceCrimeFact/2.
+:- dynamic connectedCities/2.
+:- dynamic deploymentCity/1.
+:- dynamic policeAssignment/2.
+:- dynamic cityCrime/2.
+:- dynamic pathCity/2.
+
+ 
 
 % Rules for BFS (city-crime relations)
 cityCrimeRelation(City, Crime) :- cityCrime(City, Crime).
@@ -193,6 +201,7 @@ findPath(Current, Goal, Visited, Path) :-
     \+ member(NextNorm, Visited),
     findPath(NextNorm, Goal, [NextNorm|Visited], Path).
 
+
 % Rule to store/query race-based crimes
 raceCrime(Race, Crime) :-
     raceCrimeFact(Race, Crime).
@@ -205,9 +214,15 @@ geneticRoute(City1, City2) :-
 policeUnits(City, Units) :-
     policeAssignment(City, Units).
 
-% Rule to store/query A*/Greedy paths
-searchPath(Start, Goal, Path) :-
-    pathBetween(Start, Goal, Path).
+ 
+% Rules for A* and GBFS (city paths)
+searchPath(Start, Goal, Path) :- searchPath(Start, Goal, [Start], Path).
+searchPath(Goal, Goal, Acc, Path) :- reverse(Acc, Path).
+searchPath(Current, Goal, Acc, Path) :-
+    pathCity(Current, _Next),
+    \+ member(_Next, Acc),
+    searchPath(_Next, Goal, [_Next|Acc], Path).
+
 
 % Rule to store/query hill climbing crime hotspot
 crimeHotspot(City, CrimeCount) :-
