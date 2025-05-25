@@ -27,6 +27,13 @@
 :- dynamic raceCrimeFact/2.
 :- dynamic connectedCities/2.
 :- dynamic deploymentCity/1.
+:- dynamic raceCrimeFact/2.
+:- dynamic connectedCities/2.
+:- dynamic deploymentCity/1.
+:- dynamic policeAssignment/2.
+
+% Rules for CSP (police assignments)
+optimalAssignment(City, Units) :- policeAssignment(City, Units).
 
 % Rules for Genetic Algorithm (deployment cities)
 optimalDeployment(City) :- deploymentCity(City).

@@ -327,7 +327,7 @@ def run_agent():
             else:
                 print("Step 6: Decision: No optimal deployment found, analyze more data!")
             print("Step 6: Finished making decision!")
-            
+
         # Make decision for hotspots
         def decide_hotspots(hotspots):
             print("Step 6: Our detective AI agent is making a decision based on KB knowledge as per assignment requirement!")
@@ -362,6 +362,16 @@ def run_agent():
                 print(f"Step 6: Decision: Prioritize suspects with age {scores[0]['Age']} and score {scores[0]['Score']}!")
             else:
                 print("Step 6: Decision: No suspect scores in KB, broaden suspect profiling!")
+            print("Step 6: Finished making decision!")
+
+         # Make decision for CSP assignments
+        def decide_assignments(assignments):
+            print("Step 6: Our detective AI agent is making a decision based on KB knowledge as per assignment requirement!")
+            if assignments:
+                assignment_str = ", ".join([f"{city}: {units} units" for city, units in assignments])
+                print(f"Step 6: Decision: Assign police units to cities: {assignment_str}!")
+            else:
+                print("Step 6: Decision: No valid police assignments found, reassess strategy!")
             print("Step 6: Finished making decision!")
 
         # Sherlock Holmes Menu
@@ -424,16 +434,16 @@ def run_agent():
                     decide_deployment([])
 
             elif choice == '4':
-                print("\nStep 3: Our detective AI agent is running CSP for police assignments as per assignment requirement!")
-                solution = run_script("csp.py", "backtrack", {})
-                if solution:
-                    print(f"Step 3: CSP found assignments: {solution}")
-                    add_police_units(solution)
-                    kb_units = query_police_units()
-                    decide_police_units(kb_units)
+                print("\nStep 3: Our detective AI agent is running CSP to assign police units to high-crime cities as per assignment requirement!")
+                result = run_script("csp.py", "csp_solver")
+                if result and isinstance(result, dict) and "Assignments" in result and "KB_Assignments" in result:
+                    assignments = result["Assignments"]
+                    kb_assignments = result["KB_Assignments"]
+                    print(f"Step 3: CSP found assignments: {assignments}")
+                    decide_assignments(kb_assignments)
                 else:
                     print("Step 3: CSP failed to find police assignments!")
-                    decide_police_units([])
+                    decide_assignments([])
 
             elif choice == '5':
                 print("\nStep 3: Our detective AI agent is running BFS to explore city crimes as per assignment requirement!")
