@@ -538,11 +538,34 @@ def run_agent():
 
             elif choice == '10':
                 print("\nStep 3: Our detective AI agent is running Alpha-Beta for suspects as per assignment requirement!")
-                score = run_script("alphaBetaPruning.py", "minimaxAlphaBeta", df[["Perpetrator Age", "Crime Score"]], 5, float('-inf'), float('inf'), True)
-                if score:
-                    age = 30  # Dummy age
+                # Load and prepare suspect data
+                try:
+                    crime_df = pd.read_csv("US_Crime_DataSet.csv", low_memory=False)
+                    crime_df = crime_df.dropna(subset=["Perpetrator Age", "Perpetrator Sex", "Weapon"])
+                    crime_df["Perpetrator Age"] = pd.to_numeric(crime_df["Perpetrator Age"], errors="coerce")
+                    crime_df = crime_df.dropna(subset=["Perpetrator Age"])
+                    crime_df["Perpetrator Age"] = crime_df["Perpetrator Age"].astype(int)
+                    crime_df = crime_df[crime_df["Perpetrator Age"] > 20]
+                    def calculateCrimeScore(row):
+                        age_factor = max(1, 40 - row["Perpetrator Age"])
+                        weapon_factor = 2 if "firearm" in row["Weapon"].lower() else 1
+                        victim_factor = row["Victim Count"]
+                        return age_factor + weapon_factor + victim_factor
+                    crime_df["Crime Score"] = crime_df.apply(calculateCrimeScore, axis=1)
+                    suspect_scores = crime_df[["Perpetrator Age", "Crime Score"]].sort_values(by="Crime Score", ascending=False).head(400).reset_index(drop=True)
+                    print("Step 3: Prepared suspect scores:", suspect_scores.head().to_dict())
+                except Exception as e:
+                    print(f"Step 3: Failed to prepare suspect data: {e}")
+                    suspect_scores = pd.DataFrame()
+                # Run Alpha-Beta
+                result = run_script("alphaBetaPruning.py", "minimax_alpha_beta", suspect_scores)
+                if result and isinstance(result, dict) and "Age" in result and "KB_Result" in result:
+                    age = result["Age"]
+                    score = result["Score"]
+                    kb_result = result["KB_Result"]
                     print(f"Step 3: Alpha-Beta found suspect score: {score} for age {age}")
-                    add_suspect_score(age, score)
+                    if score > 0:
+                        add_suspect_score(age, score)
                     kb_scores = query_suspect_scores()
                     decide_suspect_scores(kb_scores)
                 else:

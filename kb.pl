@@ -45,6 +45,11 @@
 :- dynamic mostCriminalCity/2.
 :- dynamic riskyCity/2.
 :- dynamic victimRaceFact/2.
+:- dynamic suspectScoreFact/2.
+
+
+% Rules for Alpha-Beta (suspect scores)
+suspectScore(Age, Score) :- suspectScoreFact(Age, Score).
 
 % Rules for MinMax (riskiest city)
 risky(City, Score) :- riskyCity(City, Score).
