@@ -1,20 +1,20 @@
 # AI Lab Assignment 3  
 **Supervisor:** [**Dr. Zunaira Rauff**](https://scholar.google.com/citations?user=YOUR_SUPERVISOR_ID_HERE)
 
-## 🧠 Topic: Create AI Agent Integrated with Python
+## Topic: Create AI Agent Integrated with Python
 
 ---
 
-## 🔍 Project Details
+##  Project Details
 
 This project is my AI **crime detection agent**, built to tackle **suspect prioritization** and **path-finding** for crime investigations. It integrates **Python**, **Prolog**, and a **CSV dataset** to make smart decisions, combining **logic-based reasoning** with **search algorithms**.
 
-### 🎯 Goal
+### Goal
 Create an AI that processes crime data, identifies key suspects, and finds optimal paths between locations—while being robust and efficient.
 
 ---
 
-## 🚀 What It Does
+##  What It Does
 
 - **Suspect Prioritization:**  
   Uses **Prolog (`kb.pl`)** to query a knowledge base with over **50 facts** and **15+ rules**, pulling data from `suspects.csv` (11 columns: Name, HasGun, etc.) to rank suspects based on crime type and location.
@@ -30,7 +30,7 @@ Create an AI that processes crime data, identifies key suspects, and finds optim
 
 ---
 
-## 🧩 Key Components
+## Key Components
 
 - `runme.py`: Main script that ties everything together. Loads `suspects.csv`, consults `kb.pl`, adds suspects, and runs BFS, A*, and genetic algorithm.
 - `kb.pl`: Prolog knowledge base (50+ facts, 15+ rules), includes predicates like `sortAllSuspects`, `path_between`.
@@ -48,9 +48,9 @@ Create an AI that processes crime data, identifies key suspects, and finds optim
 
 ---
 
-## ⚙️ How to Run
+##  How to Run
 
-### 🐳 Setup via Docker
+### Setup via Docker
 
 Ensure all files (`runme.py`, `kb.pl`, `suspects.csv`, etc.) are in the same directory.
 
