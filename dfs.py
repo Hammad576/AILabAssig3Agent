@@ -68,7 +68,7 @@ def add_race_crimes(race, crimes):
 
 # Query KB for race crimes
 def query_race_crimes(race):
-    print("Step 3.1.5: Querying KB for race-based crimes!")
+    print("Step 3.1.5: Querying KB for race-based crimes:")
     try:
         result = list(prolog.query(f"raceCrime('{race.lower()}', Crime)"))
         if result:
@@ -76,8 +76,8 @@ def query_race_crimes(race):
             for r in result:
                 print(f"  - Crime: {r['Crime']}")
         else:
-            print("Step 3.1.5: No race crimes found in KB!")
-        print("Step 3.1.5: Finished querying KB for race crimes!")
+            print("Step 3.1.5: No race crimes found in KB:")
+        print("Step 3.1.5: Finished querying KB for race crimes:")
         return result
     except Exception as e:
         print(f"Step 3.1.5: Oops, race crime query failed: {e}")
