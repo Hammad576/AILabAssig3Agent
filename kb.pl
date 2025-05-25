@@ -43,6 +43,11 @@
 :- dynamic cityCrime/2.
 :- dynamic pathCity/2.
 :- dynamic mostCriminalCity/2.
+:- dynamic riskyCity/2.
+
+% Rules for MinMax (riskiest city)
+risky(City, Score) :- riskyCity(City, Score).
+
  
 
 % Rules for Hill Climbing (most criminal city)

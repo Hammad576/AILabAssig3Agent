@@ -505,16 +505,17 @@ def run_agent():
                     decide_criminal_city([])
 
             elif choice == '8':
-                print("\nStep 3: Our detective AI agent is running MinMax for risky cities as per assignment requirement!")
-                city = run_script("minMax.py", "find_risky_city")
-                if city:
-                    print(f"Step 3: MinMax found risky city: {city}")
-                    add_risky_city(city)
-                    kb_cities = query_risky_cities()
-                    decide_risky_cities(kb_cities)
+                print("\nStep 3: Our detective AI agent is running MinMax to find risky cities for criminals as per assignment requirement!")
+                result = run_script("minMax.py", "min_max_search")
+                if result and isinstance(result, dict) and "City" in result and "KB_Result" in result:
+                    city = result["City"]
+                    risk_score = result["RiskScore"]
+                    kb_result = result["KB_Result"]
+                    print(f"Step 3: MinMax found riskiest city: {city} with risk score: {risk_score}")
+                    decide_deployment([kb_result] if kb_result else [])
                 else:
-                    print("Step 3: MinMax failed to find a risky city!")
-                    decide_risky_cities([])
+                    print("Step 3: MinMax failed to find risky cities!")
+                    decide_deployment([])
 
             elif choice == '9':
                 print("\nStep 3: Our detective AI agent is running IDDFS for victim races as per assignment requirement!")
