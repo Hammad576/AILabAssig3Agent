@@ -377,16 +377,16 @@ def run_agent():
             if choice == '1':
                 print("\nStep 3: Our detective AI agent is running DFS to find race-based crimes as per assignment requirement!")
                 race = "Black"
-                result = run_script("dfs.py", "dfs_search", {"Black": {"Crimes": set(), "Weapons Used": set(), "Crime Solved Status": {"Yes": 0, "No": 0}}}, race)
-                if result and isinstance(result, dict) and "Crimes" in result:
+                result = run_script("dfs.py", "dfs_search", race)
+                if result and isinstance(result, dict) and "Crimes" in result and "KB_Crimes" in result:
                     crimes = result["Crimes"]
+                    kb_crimes = result["KB_Crimes"]
                     print(f"Step 3: DFS found crimes for {race}: {crimes}")
-                    add_race_crimes(race, crimes)
-                    kb_crimes = query_race_crimes(race)
                     decide_race_crimes(race, kb_crimes)
                 else:
                     print("Step 3: DFS failed to find race-based crimes!")
                     decide_race_crimes(race, [])
+
 
             elif choice == '2':
                 print("\nStep 3: Our detective AI agent is running A* to find a path between cities as per assignment requirement!")
