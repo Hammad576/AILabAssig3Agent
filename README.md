@@ -1,5 +1,5 @@
 # AI Lab Assignment 3  
-**Supervisor:** [**Dr. Zunaira Rauff**](https://scholar.google.com/citations?user=YOUR_SUPERVISOR_ID_HERE)
+**Supervisor:** [**Dr. Zunaira Rauff**](https://scholar.google.com/citations?user=f2QH4MsAAAAJ&hl=en)
 
 ## Topic: Create AI Agent Integrated with Python
 
